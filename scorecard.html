@@ -191,90 +191,87 @@
 
 <script>
   // ======================================================================
-  // PASTE your Apps Script Web App /exec URL here after deploying:
   const API_URL = "https://script.google.com/macros/s/AKfycbwjTN0EvdprDSECRxRhmOI87_vPbt3Vl7h9I0W1TaUfOEv8XbAD-xMkz32KizDta2u1/exec";
   // ======================================================================
 
-  const $ = id => document.getElementById(id);
+  const $ = function(id){ return document.getElementById(id); };
 
   function showMsg(text, type){
-    const m = ;
+    var m = $('msg');
     m.className = 'msg ' + type;
     m.textContent = text;
   }
-  function clearMsg(){ const m=; m.className='msg'; m.textContent=''; }
+  function clearMsg(){ var m = $('msg'); m.className = 'msg'; m.textContent = ''; }
 
   function resetView(){
-    .style.display='none';
-    .value='';
+    $('card').style.display = 'none';
+    $('uenInput').value = '';
     clearMsg();
-    .focus();
-    window.scrollTo({top:0,behavior:'smooth'});
+    $('uenInput').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function verify(){
-    const uen = .value.trim();
+    var uen = $('uenInput').value.trim();
     if(!uen){ showMsg('Please enter a UEN.', 'error'); return; }
 
-    .disabled = true;
-    .style.display = 'none';
+    $('verifyBtn').disabled = true;
+    $('card').style.display = 'none';
     showMsg('Verifying UEN against official records…', 'loading');
 
     try{
-      const res = await fetch(API_URL + '?uen=' + encodeURIComponent(uen));
-      const data = await res.json();
+      var res = await fetch(API_URL + '?uen=' + encodeURIComponent(uen));
+      var data = await res.json();
 
       if(!data.ok){
         showMsg(data.error || 'No scorecard found for this UEN.', 'error');
-        .disabled = false;
+        $('verifyBtn').disabled = false;
         return;
       }
 
       clearMsg();
       render(data, uen);
-      .disabled = false;
+      $('verifyBtn').disabled = false;
     }catch(err){
       showMsg('Could not reach the verification service. Please try again.', 'error');
-      .disabled = false;
+      $('verifyBtn').disabled = false;
     }
   }
 
   function render(d, uen){
-    .textContent = d.name || '—';
-    .textContent  = d.uen  || uen;
-    .textContent = d.examDate || '—';
+    $('oName').textContent = d.name || '—';
+    $('oUen').textContent  = d.uen  || uen;
+    $('oDate').textContent = d.examDate || '—';
 
-    const body = ;
+    var body = $('oRows');
     body.innerHTML = '';
-    d.sections.forEach((s,i)=>{
-      const tr = document.createElement('tr');
+    d.sections.forEach(function(s, i){
+      var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td class="sub-no">'+String(i+1).padStart(2,'0')+'</td>'+
-        '<td class="sub-name">'+s.label+'</td>'+
-        '<td class="num">'+s.score+'<small> / '+s.max+'</small></td>';
+        '<td class="sub-no">' + String(i+1).padStart(2,'0') + '</td>' +
+        '<td class="sub-name">' + s.label + '</td>' +
+        '<td class="num">' + s.score + '<small> / ' + s.max + '</small></td>';
       body.appendChild(tr);
     });
-    const tr = document.createElement('tr');
-    tr.className='total-row';
-    tr.innerHTML = '<td></td><td class="sub-name">Total</td><td class="num">'+d.total+'<small> / '+d.max+'</small></td>';
-    body.appendChild(tr);
+    var trt = document.createElement('tr');
+    trt.className = 'total-row';
+    trt.innerHTML = '<td></td><td class="sub-name">Total</td><td class="num">' + d.total + '<small> / ' + d.max + '</small></td>';
+    body.appendChild(trt);
 
-    .innerHTML = d.total + '<span>/' + d.max + '</span>';
-    .textContent = d.result || 'Qualified';
+    $('oTotal').innerHTML = d.total + '<span>/' + d.max + '</span>';
+    $('oResult').textContent = d.result || 'Qualified';
 
-    .href = API_URL + '?uen=' + encodeURIComponent(uen) + '&format=pdf';
+    $('dlBtn').href = API_URL + '?uen=' + encodeURIComponent(uen) + '&format=pdf';
 
-    .style.display = 'block';
-    .scrollIntoView({behavior:'smooth', block:'start'});
+    $('card').style.display = 'block';
+    $('card').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // allow Enter key to submit
-  document.addEventListener('DOMContentLoaded', ()=>{
-    .addEventListener('keydown', e=>{ if(e.key==='Enter') verify(); });
-    // support ?uen= in the URL for direct/QR links
-    const params = new URLSearchParams(window.location.search);
-    const pre = params.get('uen');
-    if(pre){ .value = pre; verify(); }
+  document.addEventListener('DOMContentLoaded', function(){
+    $('uenInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') verify(); });
+    var params = new URLSearchParams(window.location.search);
+    var pre = params.get('uen');
+    if(pre){ $('uenInput').value = pre; verify(); }
   });
 </script>
 </body>
