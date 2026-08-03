@@ -287,6 +287,14 @@
         return;
       }
 
+      if(data.notQualified){
+        $('card').style.display = 'none';
+        showMsg(data.message || 'Student Not Qualified', 'error');
+        alert('Student Not Qualified');
+        $('verifyBtn').disabled = false;
+        return;
+      }
+
       clearMsg();
       render(data, uen);
       $('verifyBtn').disabled = false;
